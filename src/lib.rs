@@ -81,7 +81,7 @@ macro_rules! insights_filter {
             let v: Box<std::any::Any> = Box::new($val);
 
             match (stringify!($op), a) {
-                ("eq", Some(n)) => n($l, v),
+                ("eq", Some(n)) => n($l, "eq", v),
                 _ => false
             }
         };
@@ -124,12 +124,17 @@ macro_rules! insights_var {
 macro_rules! insights_expr {
     // id as id
     (@op $elm:ty, $result:expr, $var:ident => $val:tt, $ty:ty) => {
-        let a: (&str, Box<Fn(&$elm, Box<std::any::Any>) -> bool>, Box<Fn(&$elm, &$elm) -> std::cmp::Ordering>) = 
+        let a: (&str, Box<Fn(&$elm, &str, Box<std::any::Any>) -> bool>, Box<Fn(&$elm, &$elm) -> std::cmp::Ordering>) = 
             (
                 stringify!($val), 
-                Box::new(|e: &$elm, t: Box<std::any::Any>| {
+                Box::new(|e: &$elm, op: &str, t: Box<std::any::Any>| {
                     if let Some(n) = t.downcast_ref::<$ty>() {
-                        return e.$var == *n;
+                        let val = e.$var;
+                        return match op {
+                            "eq" => val == *n,
+                            "neq" => val != *n,
+                            _ => false,
+                        }
                     }
                     false
                 }),
@@ -141,12 +146,17 @@ macro_rules! insights_expr {
 
     // 0 as abc
     (@op $elm:ty, $result:expr, $var:literal => $val:tt, $ty:ty) => {
-        let a: (&str, Box<Fn(&$elm, Box<std::any::Any>) -> bool>, Box<Fn(&$elm, &$elm) -> std::cmp::Ordering>) = 
+        let a: (&str, Box<Fn(&$elm, &str, Box<std::any::Any>) -> bool>, Box<Fn(&$elm, &$elm) -> std::cmp::Ordering>) = 
             (
                 stringify!($val), 
-                Box::new(|e: &$elm, t: Box<std::any::Any>| {
+                Box::new(|e: &$elm, op: &str, t: Box<std::any::Any>| {
                     if let Some(n) = t.downcast_ref::<$ty>() {
-                        return *e.get($var).unwrap() == *n;
+                        let val = *e.get($var).unwrap();
+                        return match op {
+                            "eq" => val == *n,
+                            "neq" => val != *n,
+                            _ => false,
+                        }
                     }
                     false
                 }),
@@ -157,12 +167,17 @@ macro_rules! insights_expr {
 
     // a => b as c
     (@op $elm:ty, $result:expr, $($var:ident)* => $val:tt, $ty:ty) => {
-        let a: (&str, Box<Fn(&$elm, Box<std::any::Any>) -> bool>, Box<Fn(&$elm, &$elm) -> std::cmp::Ordering>) = 
+        let a: (&str, Box<Fn(&$elm, &str, Box<std::any::Any>) -> bool>, Box<Fn(&$elm, &$elm) -> std::cmp::Ordering>) = 
             (
                 stringify!($val), 
-                Box::new(|e: &$elm, t: Box<std::any::Any>| { 
+                Box::new(|e: &$elm, op: &str, t: Box<std::any::Any>| { 
                     if let Some(n) = t.downcast_ref::<$ty>() {
-                        return insights_var!(e, $($var)*) == *n;
+                        let val = insights_var!(e, $($var)*);
+                        return match op {
+                            "eq" => val == *n,
+                            "neq" => val != *n,
+                            _ => false,
+                        }
                     }
                     false
                 }),
