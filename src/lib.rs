@@ -82,6 +82,11 @@ macro_rules! insights_filter {
 
             match (stringify!($op), a) {
                 ("eq", Some(n)) => n($l, "eq", v),
+                ("neq", Some(n)) => n($l, "neq", v),
+                ("gt", Some(n)) => n($l, "gt", v),
+                ("gte", Some(n)) => n($l, "gte", v),
+                ("lt", Some(n)) => n($l, "lt", v),
+                ("lte", Some(n)) => n($l, "lte", v),
                 _ => false
             }
         };
@@ -133,6 +138,10 @@ macro_rules! insights_expr {
                         return match op {
                             "eq" => val == *n,
                             "neq" => val != *n,
+                            "gt" => val > *n,
+                            "gte" => val >= *n,
+                            "lt" => val < *n,
+                            "lte" => val <= *n,
                             _ => false,
                         }
                     }
