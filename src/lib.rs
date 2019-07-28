@@ -164,6 +164,10 @@ macro_rules! insights_expr {
                         return match op {
                             "eq" => val == *n,
                             "neq" => val != *n,
+                            "gt" => val > *n,
+                            "gte" => val >= *n,
+                            "lt" => val < *n,
+                            "lte" => val <= *n,
                             _ => false,
                         }
                     }
@@ -185,6 +189,10 @@ macro_rules! insights_expr {
                         return match op {
                             "eq" => val == *n,
                             "neq" => val != *n,
+                            "gt" => val > *n,
+                            "gte" => val >= *n,
+                            "lt" => val < *n,
+                            "lte" => val <= *n,
                             _ => false,
                         }
                     }
